@@ -17,4 +17,9 @@ roleRouter.post("/", async (req, res, next) => {
     }
 })
 
+roleRouter.get("/", async (req, res, next) => {
+    const roles = await Role.find({})
+    res.json(roles.map(role => role.toJSON()))
+})
+
 module.exports = roleRouter

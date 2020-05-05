@@ -7,6 +7,7 @@ const middleware = require('./utils/middleware')
 const timeslotRouter = require("./controller/timeslot")
 const usersRouter = require('./controller/user')
 const roleRouter = require("./controller/role")
+const loginRouter = require("./controller/login")
 logger.info("connecting to ", config.MONGODB_URI)
 
 mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/timeslot", timeslotRouter)
 app.use("/api/user", usersRouter)
+app.use("/api/user/login", loginRouter)
 app.use("/api/role", roleRouter)
 
 app.use(middleware.unknownEndpoint)

@@ -27,6 +27,7 @@ userSchema.set("toJSON", {
         delete returnedObject.passwordHash
     }
 })
+
 userSchema.plugin(uniqueValidator)
 const User = mongoose.model("User", userSchema)
 
