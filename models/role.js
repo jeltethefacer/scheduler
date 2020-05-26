@@ -1,7 +1,11 @@
 const mongoose = require("mongoose")
 
 const roleSchema = new mongoose.Schema({
-    abreviation: String,
+    abreviation: { 
+        type: String,
+        unique: true,
+        required: true
+    },
     description: String,
     users: [
         {

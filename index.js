@@ -1,5 +1,8 @@
 const express = require("express")
 const mongoose = require("mongoose")
+const cors = require('cors')
+
+
 const logger = require("./utils/logger")
 const config = require("./utils/config")
 const middleware = require('./utils/middleware')
@@ -8,6 +11,8 @@ const timeslotRouter = require("./controller/timeslot")
 const usersRouter = require('./controller/user')
 const roleRouter = require("./controller/role")
 const loginRouter = require("./controller/login")
+const moderatorRouter = require("./controller/moderator")
+
 logger.info("connecting to ", config.MONGODB_URI)
 
 mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -19,18 +24,19 @@ mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology
 
 const app = express()
 
+app.use(cors())
+
 app.use(express.json())
 app.use(middleware.requestLogger)
-app.get("/", (req, res) => {
-    res.json({
-        jelte: "gay"
-    })
-})
+
+app.use(express.static('build'))
+
 
 app.use("/api/timeslot", timeslotRouter)
 app.use("/api/user", usersRouter)
 app.use("/api/user/login", loginRouter)
 app.use("/api/role", roleRouter)
+app.use("/api/moderator", moderatorRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)

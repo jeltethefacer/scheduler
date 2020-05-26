@@ -1,10 +1,22 @@
 const mongoose = require("mongoose")
 
 const timeslotSchema = new mongoose.Schema({
+    description: String,
     startTime: Date,
-    length: Number,
-    user: Number,
-    TC: Boolean
+    endTime: Date,
+    maxPeople: Number,
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    roles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Role"
+    }],
+    subscribed: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }]
 })
 
 
