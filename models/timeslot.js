@@ -16,7 +16,12 @@ const timeslotSchema = new mongoose.Schema({
     subscribed: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
-    }]
+    }],
+    timeslotCategorie: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeslotCategorie",
+        required: true
+    }
 })
 
 

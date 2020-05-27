@@ -12,7 +12,7 @@ const usersRouter = require('./controller/user')
 const roleRouter = require("./controller/role")
 const loginRouter = require("./controller/login")
 const moderatorRouter = require("./controller/moderator")
-
+const timeslotCategorieRouter = require("./controller/timeslotCategorie")
 logger.info("connecting to ", config.MONGODB_URI)
 
 mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -37,6 +37,7 @@ app.use("/api/user", usersRouter)
 app.use("/api/user/login", loginRouter)
 app.use("/api/role", roleRouter)
 app.use("/api/moderator", moderatorRouter)
+app.use("/api/timeslotcategorie", timeslotCategorieRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
