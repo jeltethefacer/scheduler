@@ -36,7 +36,7 @@ moderatorRouter.post("/addUser", async (req, res, next) => {
     if (userModeratorAuth.passed) {
         const saltRounds = 10
         const password = generatePassword(10)
-        
+
         logger.error(password)
 
         const passwordHash = await bcrypt.hash(password, saltRounds)
@@ -125,12 +125,12 @@ moderatorRouter.post("/toggleRole", async (req, res, next) => {
     if (roleAuthorizationReturn.passed) {
         role = await Role.findById(body.roleId)
 
-        if(!role) {
-            res.status(400).json({error: "The role does not exists"})
+        if (!role) {
+            res.status(400).json({ error: "The role does not exists" })
         }
 
 
-        if(role.users.includes(body.userId)) {
+        if (role.users.includes(body.userId)) {
             logger.info("remove")
 
             res.json(await removeRoleFromUser(body.userId, body.roleId))
@@ -145,6 +145,46 @@ moderatorRouter.post("/toggleRole", async (req, res, next) => {
 
 })
 
+moderatorRouter.post("/toggleChairman", async (req, res, next) => {
+    const body = req.body
+
+    //checks if the user has the addRole role 
+    roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
+
+
+    if (roleAuthorizationReturn.passed) {
+        let user = await User.findById(body.userId)
+        let role = await Role.findById(body.roleId)
+        if (!user) {
+            res.status(400).json({ errorCode: "NO_USER_ERROR" })
+        }
+        else if(!role) {
+            res.status(400).json({errorCode: "NO_ROLE_ERROR"})
+        } else if(!user.chairman.includes(role._id)) {
+            console.log("add")
+
+            user.chairman = user.chairman.concat(role._id)
+
+            user.save().then((response) => {
+                res.json(response)
+            }).catch((error) => {
+                res.status(400).json({errorCode: "SAVE_ERROR", error: error})
+            })
+        } else {
+            console.log("remove")
+            user.chairman = user.chairman.filter((chairmanRole) => {
+                return chairmanRole.toString() !== role._id.toString()
+            })
+            user.save().then((response) => {
+                res.json(response)
+            }).catch((error) => {
+                res.status(400).json({errorCode: "SAVE_ERROR", error: error})
+            })
+        }
+    } else {
+        res.status(401).json({ errorCode: "NO_AUTHORIZATION" })
+    }
+})
 
 const addRoleToUser = async (userId, roleId) => {
     //uses this to prevent duplucation since there are two responses 
@@ -159,9 +199,9 @@ const addRoleToUser = async (userId, roleId) => {
     const role = await Role.findById(roleId)
 
     if (!user) {
-        throw(400)
+        throw (400)
     } else if (!role) {
-        throw(400)
+        throw (400)
     }
     //check if the user has the role assigned
     if (user.roles.includes(role._id)) {
@@ -190,9 +230,9 @@ const removeRoleFromUser = async (userId, roleId) => {
     const role = await Role.findById(roleId)
 
     if (!user) {
-        throw(400)
+        throw (400)
     } else if (!role) {
-        throw(400)
+        throw (400)
     }
 
     else {

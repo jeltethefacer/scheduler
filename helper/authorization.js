@@ -27,7 +27,7 @@ const roleAuthorization = async (req, roleId) => {
   const authorizedUser = await User.findById(decodedToken.id)
 
   if (!authorizedUser.roles.includes(roleId)) {
-    return { passed: false, message: "Not the nesessary authorization" }
+    return { passed: false, message: "Not the nesessary authorization", user: authorizedUser }
   }
   return { passed: true, user: authorizedUser }
 }

@@ -11,7 +11,8 @@ const timeslotSchema = new mongoose.Schema({
     },
     roles: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Role"
+        ref: "Role",
+        required: true
     }],
     subscribed: [{
         type: mongoose.Schema.Types.ObjectId,

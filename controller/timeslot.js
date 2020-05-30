@@ -29,7 +29,7 @@ timeslotRouter.get("/", async (req, res) => {
                 const filtered = response.filter((timeslot) => {
                     const timestartTimeDate = new Date(timeslot.startTime)
                     const currentDate = new Date()
-                    return (new Date(timestartTimeDate - mappedCategories[timeslot.timeslotCategorie].subscribeLength * 60 * 60 * 1000) < currentDate)
+                    return (new Date(timestartTimeDate - mappedCategories[timeslot.timeslotCategorie].subscribeLength * 60 * 60 * 1000) < currentDate || mappedCategories[timeslot.timeslotCategorie].subscribeLength === 0)
 
                 })
                 res.json(filtered.map(timeslot => timeslot.toJSON()))
@@ -129,27 +129,38 @@ timeslotRouter.post("/", async (req, res) => {
 
     //checks for createTimeslots
     const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
+    console.log(authPassed)
+    //checks if the chairman wants to create a timeslot for it's own users
+    const chairmanRoles = authPassed.user.chairman
+    const intersect = body.roles.filter(role => chairmanRoles.includes(role))
 
-    if (authPassed.passed) {
+    if (authPassed.passed || body.roles.length === intersect.length) {
 
         const userId = authPassed.user._id.toString()
+        const startTime = new Date(body.startTime)
+        const endTime = new Date(body.endTime)
 
         const timeslot = new Timeslot({
             description: body.description,
-            startTime: body.startTime,
-            endTime: body.endTime,
+            startTime: startTime,
+            endTime: endTime,
             maxPeople: body.maxPeople,
             createdBy: userId,
             roles: body.roles,
             subscribed: [],
             timeslotCategorie: body.timeslotCategorie
         })
-
-        timeslot.save().then(timesloteResponse => {
-            res.json(timesloteResponse.toJSON())
-        }).catch(error => {
-            res.status(400).json({ errorCode: "SAVE_ERROR", error: error })
-        })
+        if(body.roles.length === 0){
+            res.status(400).json({errorCode: "NO_ROLES_ERROR"})
+        } else if(startTime > endTime) {
+            res.status(400).json({errorCode: "START_GREATER_END_TIME_ERROR"})
+        } else {
+            timeslot.save().then(timesloteResponse => {
+                res.json(timesloteResponse.toJSON())
+            }).catch(error => {
+                res.status(400).json({ errorCode: "SAVE_ERROR", error: error })
+            })
+        }
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
     }
