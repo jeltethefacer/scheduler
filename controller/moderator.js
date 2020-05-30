@@ -7,6 +7,8 @@ const Role = require("../models/role")
 const authorizationFunctions = require("../helper/authorization")
 const logger = require("../utils/logger")
 
+const config = require("../utils/config")
+
 const sendEmailWithPassword = require("../helper/mailer")
 const generatePassword = require("../helper/password")
 
@@ -14,7 +16,7 @@ moderatorRouter.get("/users", async (req, res, next) => {
     const body = req.body
 
     //checks if the user has the userModerator role 
-    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, "5ec4127ec5890808ec774eef")
+    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (userModeratorAuth.passed) {
         logger.info("karma")
@@ -29,7 +31,7 @@ moderatorRouter.post("/addUser", async (req, res, next) => {
     const body = req.body
 
     //checks if the user has the userModerator role 
-    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, "5ec4127ec5890808ec774eef")
+    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (userModeratorAuth.passed) {
         const saltRounds = 10
@@ -63,7 +65,7 @@ moderatorRouter.post("/deleteUser", async (req, res, next) => {
     const body = req.body
 
     //checks if the user has the userModerator role 
-    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, "5ec4127ec5890808ec774eef")
+    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (userModeratorAuth.passed) {
 
@@ -91,7 +93,7 @@ moderatorRouter.post("/addRole", async (req, res, next) => {
     const body = req.body
 
     //checks if the user has the userModerator role 
-    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, "5ec4127ec5890808ec774eef")
+    userModeratorAuth = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (userModeratorAuth.passed) {
 
@@ -116,7 +118,7 @@ moderatorRouter.post("/toggleRole", async (req, res, next) => {
     const body = req.body
 
     //checks if the user has the addRole role 
-    roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, "5eb14429cad99108d41050a7")
+    roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     logger.info(roleAuthorizationReturn)
 

@@ -34,7 +34,13 @@ const roleAuthorization = async (req, roleId) => {
 
 const authorization = async (req) => {
   const token = getTokenFrom(req)
-  const decodedToken = jwt.verify(token, process.env.SECRET)
+
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET)
+  } catch {
+    return { passed: false, message: "invalid or missing token" }
+  }
+
   if (!token || !decodedToken.id) {
     return { passed: false, message: "invalid or missing token" }
   }

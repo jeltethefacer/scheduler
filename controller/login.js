@@ -4,6 +4,8 @@ const loginRouter = require('express').Router()
 
 const config = require("../utils/config")
 
+const authorizationFunctions = require("../helper/authorization")
+
 const User = require('../models/user')
 
 loginRouter.post('/', async (request, response) => {
@@ -30,6 +32,15 @@ loginRouter.post('/', async (request, response) => {
   response
     .status(200)
     .send({ token, email: user.email, frontName: user.frontName })
+})
+
+
+loginRouter.post("/verify", async(req, res) => {
+  const user = await authorizationFunctions.authorization(req)
+  if(user.passed){
+    res.status(200).send()
+  }  
+  res.status(401).send()
 })
 
 module.exports = loginRouter

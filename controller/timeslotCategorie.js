@@ -4,26 +4,34 @@ const User = require("../models/user")
 const authorization = require("../helper/authorization").authorization
 const roleAuthorization = require("../helper/authorization").roleAuthorization
 
+const config = require("../utils/config")
 
-timeslotCategorieRouter.post("/", async (req, res) => {
+timeslotCategorieRouter.post("/", async (req, res, next) => {
     const body = req.body 
 
-    const authPassed = await roleAuthorization(req, "5ecd19715a69b00fc49bc4fc")
+    const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
 
     if(authPassed.passed){
 
         const userId = authPassed.user._id.toString()
 
-        const timeslotCategorie = new TimeslotCategorie({
-            title: body.title,
-            cancelLength: body.cancelLength
-        })
-
-        timeslotCategorie.save().then(timesloteCategorieResponse => {
-            res.json(timesloteCategorieResponse.toJSON())
-        }).catch(error => {
-            res.status(400).json({errorCode: "SAVE_ERROR", error: error})
-        })
+        subscribeLength = body.subscribeLength
+        cancelLength = body.cancelLength
+        if(subscribeLength<0 || (subscribeLength < cancelLength && !(subscribeLength == 0))) {
+            res.status(400).json({errorCode: "TIME_ERROR"})
+        } else {
+            const timeslotCategorie = new TimeslotCategorie({
+                title: body.title,
+                cancelLength: body.cancelLength,
+                subscribeLength: body.subscribeLength
+            })
+    
+            timeslotCategorie.save().then(timesloteCategorieResponse => {
+                res.json(timesloteCategorieResponse.toJSON())
+            }).catch(error => {
+                res.status(400).json({errorCode: "SAVE_ERROR", error: error})
+            })
+        }
     } else{
         res.status(401).json({errorCode: "NOT_AUTHORIZED"})
     }

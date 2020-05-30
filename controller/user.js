@@ -32,13 +32,11 @@ usersRouter.post("/", async (req, res, next) => {
 usersRouter.get("/", async (req, res, next) => {
     const body = req.body
     const user = await authorizationFunctions.authorization(req)
-    //maybe innificient but meh
-
-    const returnUser = await User.findById(user.user._id).populate("roles", {
-        abreviation: 1, description: 1
-    })
 
     if (user.passed) {
+        const returnUser = await User.findById(user.user._id).populate("roles", {
+            abreviation: 1, description: 1
+        })
         res.json(returnUser.toJSON())
     }
     else {
@@ -89,5 +87,6 @@ usersRouter.post("/addRole", async (req, res, next) => {
     }
 
 })
+
 
 module.exports = usersRouter
