@@ -55,9 +55,9 @@ timeslotRouter.post("/subscribe", async (req, res) => {
         timeslotCategorie = await TimeslotCategorie.findById(timeslot.timeslotCategorie)
         startTimeDate = new Date(timeslot.startTime)
         currentDate = new Date()
-
-        if (timeslotCategorie && new Date(startTimeDate - timeslotCategorie.subscribeLength * 60 * 60 * 1000) > currentDate || timeslotCategorie.subscribeLength === 0) {
-            res.status(400).json({ errorCode: "TIME_ERROR_SUBSCRIBE", errorInfo: timeslotCategorie.cancelLength })
+        
+        if (timeslotCategorie && (new Date(startTimeDate - timeslotCategorie.subscribeLength * 60 * 60 * 1000) > currentDate && timeslotCategorie.subscribeLength !== 0)) {
+            res.status(400).json({ errorCode: "TIME_ERROR_SUBSCRIBE", errorInfo: timeslotCategorie.subscribeLength })
         } else if (timeslot.subscribed.includes(userId)) {
             res.json(timeslot.toJSON())
         } else if (timeslot.subscribed.length >= timeslot.maxPeople) {
