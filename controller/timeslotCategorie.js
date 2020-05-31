@@ -63,12 +63,15 @@ timeslotCategorieRouter.post("/change", async (req, res, next) => {
         const userId = authPassed.user._id.toString()
         const subscribeLength = body.subscribeLength
         const cancelLength = body.cancelLength
+        const title = body.title
 
         if(subscribeLength<0 || (subscribeLength < cancelLength && !(subscribeLength == 0))) {
             res.status(400).json({errorCode: "TIME_ERROR"})
+        } else if(title.length < 3){
+            res.status(400).json({errorCode: "TITLE_LENGTH_ERROR"})
         } else {
             let timeslotCategorie = await TimeslotCategorie.findById(body.timeslotCategorieId)
-            timeslotCategorie.title = body.title
+            timeslotCategorie.title = title
             timeslotCategorie.subscribeLength = subscribeLength
             timeslotCategorie.cancelLength = cancelLength
             
