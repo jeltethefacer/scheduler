@@ -15,11 +15,11 @@ timeslotRouter.get("/", async (req, res) => {
 
     if (authPassed.passed) {
         //if it's the combar show everything 
-        if(authPassed.user.roles.includes(config.COM_BAR)) {
-            const timeslots = await Timeslot.find({startTime: {$gt: new Date()}})
+        if (authPassed.user.roles.includes(config.COM_BAR)) {
+            const timeslots = await Timeslot.find({ startTime: { $gt: new Date() } })
             res.json(timeslots)
         } else {
-            Timeslot.find({startTime: {$gt: new Date()}, roles: {$in: authPassed.user.roles}}).then(async response => {
+            Timeslot.find({ startTime: { $gt: new Date() }, roles: { $in: authPassed.user.roles } }).then(async response => {
 
                 const categories = await TimeslotCategorie.find({})
                 const mappedCategories = {}
@@ -38,7 +38,24 @@ timeslotRouter.get("/", async (req, res) => {
             })
         }
     } else {
-        res.status(401).json({ error: "no auth user" })
+        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
+    }
+})
+
+timeslotRouter.get("/user", async (req, res) => {
+    const body = req.body
+
+    const authPassed = await authorization(req)
+
+    if (authPassed.passed) {
+        //finds the timeslot for which the start time is later than the current tim
+        Timeslot.find({ startTime: { $gt: new Date() }, subscribed: { $in: authPassed.user._id } }).then(async response => {
+            res.json({"timeslots": response.map(timeslot => timeslot.toJSON())})
+        }).catch(error => {
+            res.status(400).json({"errorCode": "SAVE_ERROR"})
+        })
+    } else {
+        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
     }
 })
 
@@ -55,7 +72,7 @@ timeslotRouter.post("/subscribe", async (req, res) => {
         timeslotCategorie = await TimeslotCategorie.findById(timeslot.timeslotCategorie)
         startTimeDate = new Date(timeslot.startTime)
         currentDate = new Date()
-        
+
         if (timeslotCategorie && (new Date(startTimeDate - timeslotCategorie.subscribeLength * 60 * 60 * 1000) > currentDate && timeslotCategorie.subscribeLength !== 0)) {
             res.status(400).json({ errorCode: "TIME_ERROR_SUBSCRIBE", errorInfo: timeslotCategorie.subscribeLength })
         } else if (timeslot.subscribed.includes(userId)) {
@@ -75,7 +92,7 @@ timeslotRouter.post("/subscribe", async (req, res) => {
             })
         }
     } else {
-        res.status(401).json({ error: "no auth user" })
+        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
     }
 })
 
@@ -118,7 +135,7 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
             res.json(timeslot.toJSON())
         }
     } else {
-        res.status(401).json({ error: "no auth user" })
+        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
     }
 })
 
@@ -150,10 +167,10 @@ timeslotRouter.post("/", async (req, res) => {
             subscribed: [],
             timeslotCategorie: body.timeslotCategorie
         })
-        if(body.roles.length === 0){
-            res.status(400).json({errorCode: "NO_ROLES_ERROR"})
-        } else if(startTime > endTime) {
-            res.status(400).json({errorCode: "START_GREATER_END_TIME_ERROR"})
+        if (body.roles.length === 0) {
+            res.status(400).json({ errorCode: "NO_ROLES_ERROR" })
+        } else if (startTime > endTime) {
+            res.status(400).json({ errorCode: "START_GREATER_END_TIME_ERROR" })
         } else {
             timeslot.save().then(timesloteResponse => {
                 res.json(timesloteResponse.toJSON())
@@ -170,7 +187,6 @@ timeslotRouter.post("/delete", async (req, res) => {
 
     //checks for createTimeslots
     const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
-
 
     if (authPassed.passed) {
         Timeslot.findByIdAndRemove(req.body.timeslotId).then(response => {
