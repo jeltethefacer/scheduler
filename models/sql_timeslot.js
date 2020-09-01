@@ -4,7 +4,7 @@ const {DataTypes, Model, NOW} = require("sequelize");
 class Timeslot extends Model{}
 
 Timeslot.init({
-    maxNumber: {
+    maxPeople: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1

@@ -4,6 +4,7 @@ const Timeslot = require("./sql_timeslot");
 const TimeslotCategory = require("./sql_timeslotCategory");
 const timeslot = require("./timeslot");
 const sequelize = require("./dbConnection");
+const { create } = require("./sql_user");
 
 
 
@@ -17,35 +18,48 @@ function getModels() {
     User.belongsToMany(Role, {through: "UserRoles"});
     Role.belongsToMany(User, {through: "UserRoles"});
 
+    //create subscribed
+    Timeslot.belongsToMany(User, {through: "subscribedToTimeslot", as: "subscriber"});
+    User.belongsToMany(Timeslot, {through: "subscribedToTimeslot", as: "subscriber"});
+
+    Role.belongsToMany(Timeslot, {through: "TimeslotRoles"});
+    Timeslot.belongsToMany(Role, {through: "TimeslotRoles"});
+
     //chairman one-to-many assoc 
     User.hasMany(Role, {
         foreignKey:{
             name: "chairman"
-        }
+        },
+        as: "chairman"
     })
+    Role.belongsTo(Role, {foreignKey: "chairman"})
 
-    Role.belongsTo(User);
-
-    //created timeslot on-to-many
+    //createdby timeslot one-to-many
     User.hasMany(Timeslot, {
-        foreignKey: "createdBy"
+        foreignKey: {
+            name: "createdBy"
+        },
+        as: "createdByUser"
     })
-    Timeslot.belongsTo(User);
-
-    //create subscribed
-    Timeslot.belongsToMany(Role, {through: "subscribedToTmeslot"});
-    Role.belongsToMany(Timeslot, {through: "subscribedToTmeslot"});
+    Timeslot.belongsTo(User, {
+        foreignKey: {
+            name: "createdBy"
+        }, 
+        as: "createdByUser"
+    });
 
     //timeslotcategorie one-to-many relation.
     TimeslotCategory.hasMany(Timeslot, {
-        foreignKey: "timeslotCategory"
+        foreignKey: {
+            name: "timeslotCategory"
+        }
     })
-    Timeslot.belongsTo(TimeslotCategory);
+    Timeslot.belongsTo(TimeslotCategory, {foreignKey: "timeslotCategory"})
 
     return {
         User: User,
         Role: Role,
-        Timeslot: timeslot,
+        Timeslot: Timeslot,
         TimeslotCategory: TimeslotCategory
     }
 }

@@ -59,7 +59,7 @@ async function init(email, password, port=3001) {
         console.log(await savedUser.addRoles(roleArray));
         await userModeratorRole.save()
 
-        const toWrite = `
+        const toWrite = `PORT=${port}
 SECRET="adsfkajsdlkfjajsd;lfj;" 
 EMAIL_PASSWORD=imsodpzpwhjjomgx
 USER_MODERATOR=${roleArray[0].id}
