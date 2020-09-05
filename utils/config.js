@@ -8,6 +8,10 @@ const USER_MODERATOR = process.env.USER_MODERATOR
 const CHANGE_ROLE = process.env.CHANGE_ROLE
 const CREATE_TIMESLOT = process.env.CREATE_TIMESLOT
 const COM_BAR = process.env.COM_BAR
+const DB_NAME = process.env.DB_NAME
+const DB_USERNAME = process.env.DB_USERNAME
+const DB_PASSWORD = process.env.DB_PASSWORD
+const DB_IP = process.env.DB_IP
 
 
 module.exports = {
@@ -18,5 +22,9 @@ module.exports = {
     USER_MODERATOR, 
     CHANGE_ROLE,
     CREATE_TIMESLOT,
-    COM_BAR
+    COM_BAR,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_USERNAME,
+    DB_IP
 }

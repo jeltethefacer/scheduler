@@ -1,7 +1,9 @@
 const { Sequelize } = require('sequelize');
+const config = require("../utils/config");
+const { DB_IP } = require('../utils/config');
 
-const sequelize = new Sequelize('diensten_rooster', 'root', 'root', {
-    host: '127.0.0.1',
+const sequelize = new Sequelize(config.DB_NAME, config.DB_USERNAME, config.DB_PASSWORD, {
+    host: DB_IP,
     dialect: 'mysql'
 });
 async function authenticate() {

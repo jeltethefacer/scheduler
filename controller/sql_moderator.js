@@ -18,7 +18,9 @@ moderatorRouter.get("/users", async (req, res, next) => {
     userModeratorAuth = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (userModeratorAuth.passed) {
-        users = await User.findAll();
+        users = await User.findAll({
+            include: ["roles", "chairman"]
+        });
         res.json(users)
     } else {
         res.status(401).json({ error: userModeratorAuth.message })
@@ -150,8 +152,11 @@ moderatorRouter.post("/toggleChairman", async (req, res, next) => {
     roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
     if (roleAuthorizationReturn.passed) {
-        let user = await User.findByPk(body.userId)
+        let user = await User.findByPk(body.userId, {
+            include: ["roles", "chairman"]
+        })
         let role = await Role.findByPk(body.roleId)
+
         if (!user) {
             res.status(400).json({ errorCode: "NO_USER_ERROR" })
         }
@@ -164,11 +169,12 @@ moderatorRouter.post("/toggleChairman", async (req, res, next) => {
             logger.info("remove")
             await user.removeChairman(role);
         }
-
+        //gets the updated userinformation.
+        await user.reload();
         res.json({user: user, role: role})
     } else {
         res.status(401).json({ errorCode: "NO_AUTHORIZATION" })
     }
 })
 
-module.exports = moderatorRouter
+module.exports = moderatorRouter    

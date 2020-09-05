@@ -1,7 +1,8 @@
-const {User, Role} = require("./models/models")
+const {User, Role, createModels} = require("./models/models")
 
 fs = require('fs');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const { create } = require("./models/sql_user");
 
 const args = process.argv.slice(2, 6)
 
@@ -12,8 +13,8 @@ async function asyncForEach(array, callback) {
 }
 
 async function init(email, password, port=3001) {
+    
     try {
-
         const userModeratorRole = await Role.create({
             abreviation: "userModerator",
             description: "can change user"
