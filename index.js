@@ -1,6 +1,7 @@
 const express = require("express")
 const mongoose = require("mongoose")
 const cors = require('cors')
+const path = require('path');
 
 
 const logger = require("./utils/logger")
@@ -39,7 +40,10 @@ app.use("/api/role", roleRouter)
 app.use("/api/moderator", moderatorRouter)
 app.use("/api/timeslotcategory", timeslotCategorieRouter)
 
-app.use(middleware.unknownEndpoint)
+app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 app.use(middleware.errorHandler)
 
 app.listen(config.PORT, () => {
