@@ -97,7 +97,12 @@ timeslotRouter.post("/subscribe", async (req, res) => {
     const authPassed = await authorization(req)
 
     if (authPassed.passed) {
-        const timeslot = await Timeslot.findByPk(body.timeslotId)
+        const timeslot = await Timeslot.findByPk(body.timeslotId, {include: [{
+            model: Role,
+        }, {
+            model: User,
+            association: "subscribers"
+        }]})
         const user = authPassed.user
 
         timeslotCategory = await timeslot.getTimeslotCategory()
@@ -120,7 +125,7 @@ timeslotRouter.post("/subscribe", async (req, res) => {
             res.status(400).json({ errorCode: "NO_VALID_ROLE" })
         } else {
             await timeslot.addSubscribers(user);
-            res.json(await timeslot.getSubscribers());
+            res.json({timeslot: await timeslot.reload()});
         }
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
@@ -134,7 +139,12 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
     const authPassed = await authorization(req)
 
     if (authPassed.passed) {
-        let timeslot = await Timeslot.findByPk(body.timeslotId)
+        let timeslot = await Timeslot.findByPk(body.timeslotId, {include: [{
+            model: Role,
+        }, {
+            model: User,
+            association: "subscribers"
+        }]})
         
         if (await timeslot.hasSubscribers(authPassed.user)) {
             // checks if its between the timelimit
@@ -147,11 +157,11 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
                 res.status(400).json({ errorCode: "TIME_ERROR_UNSUBSCRIBE", errorInfo: timeslotCategory.cancelLength })
             } else {
                 await timeslot.removeSubscribers(authPassed.user);
-                res.json(await timeslot.getSubscribers());
+                res.json({timeslot: await timeslot.reload()});
             }
         }
         else {
-            res.json(timeslot.toJSON())
+            res.json({timeslot: timeslot})
         }
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
