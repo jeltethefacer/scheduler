@@ -16,11 +16,11 @@ async function createModels() {
 function getModels() {
     //role many-to-many
     User.belongsToMany(Role, {through: "UserRoles", as: "roles"});
-    Role.belongsToMany(User, {through: "UserRoles", as: "roles"});
+    Role.belongsToMany(User, {through: "UserRoles", as: "users"});
 
     //create subscribed
-    Timeslot.belongsToMany(User, {through: "subscribedToTimeslot", as: "subscriber"});
-    User.belongsToMany(Timeslot, {through: "subscribedToTimeslot", as: "subscriber"});
+    Timeslot.belongsToMany(User, {through: "subscribedToTimeslot", as: "subscribers"});
+    User.belongsToMany(Timeslot, {through: "subscribedToTimeslot", as: "subscribers"});
 
     Role.belongsToMany(Timeslot, {through: "TimeslotRoles"});
     Timeslot.belongsToMany(Role, {through: "TimeslotRoles"});
@@ -55,6 +55,7 @@ function getModels() {
         }
     })
     Timeslot.belongsTo(TimeslotCategory, {foreignKey: "timeslotCategory"})
+
     return {
         User: User,
         Role: Role,

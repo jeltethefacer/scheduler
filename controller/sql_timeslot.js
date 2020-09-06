@@ -16,15 +16,20 @@ timeslotRouter.get("/", async (req, res) => {
 
     const authPassed = await authorization(req)
 
-
     if (authPassed.passed) {
         //if it's the combar show everything 
         if (await authPassed.user.hasRole(config.COM_BAR)) {
             const timeslots = await Timeslot.findAll({where: {
                 startTime: {
                     [Op.gt]: new Date()
-                }
-            }})
+                }},
+                include: [{
+                    model: Role,
+                }, {
+                    model: User,
+                    association: "subscribers"
+                }]
+            })
             res.json(timeslots)
         } else {
             userRoles = (await authPassed.user.getRoles()).map(role => role.id)
@@ -34,12 +39,16 @@ timeslotRouter.get("/", async (req, res) => {
                         [Op.gt]: new Date()
                     }
                 },
-                include:{
+                include: [{
                     model: Role,
                     where: {
                         "id": userRoles
-                } 
-            }})
+                    }
+                }, {
+                    model: User,
+                    association: "subscribers"
+                }]
+            })
 
         
             const categories = await TimeslotCategory.findAll()
@@ -65,13 +74,18 @@ timeslotRouter.get("/user", async (req, res) => {
 
     const authPassed = await authorization(req)
     if (authPassed.passed) {
-        let timeslots = await authPassed.user.getSubscriber({where: {
+        let timeslots = await authPassed.user.getSubscribers({where: {
             startTime: {
                 [Op.gt]: new Date()
-            }
-        }});
+            }},
+            include: [{
+                model: Role
+            }, {
+                model: User,
+                association: "subscribers"
+            }]
+        });
         res.json({timeslots})
-
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
     }
@@ -99,14 +113,14 @@ timeslotRouter.post("/subscribe", async (req, res) => {
 
         if (timeslotCategory && (new Date(startTimeDate - timeslotCategory.subscribeLength * 60 * 60 * 1000) > currentDate && timeslotCategory.subscribeLength !== 0)) {
             res.status(400).json({ errorCode: "TIME_ERROR_SUBSCRIBE", errorInfo: timeslotCategory.subscribeLength })
-        } else if (await timeslot.countSubscriber() >= timeslot.maxPeople) {
+        } else if (await timeslot.countSubscribers() >= timeslot.maxPeople) {
             res.status(400).json({ errorCode: "TIMESLOT_FULL" })
-        } else if (intersection.length == 1) {
+        } else if (intersection.length == 0) {
             //intersects the roles from the timeslot with the roles in user if there is overlap allow to subscribe
             res.status(400).json({ errorCode: "NO_VALID_ROLE" })
         } else {
-            await timeslot.addSubscriber(user);
-            res.json(await timeslot.getSubscriber());
+            await timeslot.addSubscribers(user);
+            res.json(await timeslot.getSubscribers());
         }
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
@@ -122,7 +136,7 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
     if (authPassed.passed) {
         let timeslot = await Timeslot.findByPk(body.timeslotId)
         
-        if (await timeslot.hasSubscriber(authPassed.user)) {
+        if (await timeslot.hasSubscribers(authPassed.user)) {
             // checks if its between the timelimit
 
             timeslotCategory = await timeslot.getTimeslotCategory()
@@ -132,8 +146,8 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
             if (timeslotCategory && new Date(currentDate.getTime() + timeslotCategory.cancelLength * 60 * 60 * 1000) >= startTimeDate) {
                 res.status(400).json({ errorCode: "TIME_ERROR_UNSUBSCRIBE", errorInfo: timeslotCategory.cancelLength })
             } else {
-                await timeslot.removeSubscriber(authPassed.user);
-                res.json(await timeslot.getSubscriber());
+                await timeslot.removeSubscribers(authPassed.user);
+                res.json(await timeslot.getSubscribers());
             }
         }
         else {
@@ -154,7 +168,6 @@ timeslotRouter.post("/", async (req, res) => {
     
     //checks if the chairman wants to create a timeslot for it's own users
     const chairmanRoles = await authPassed.user.getChairman();
-    logger.info(body);
     //const intersect = body.roles.filter(role => chairmanRoles.includes(role))
 
     if (authPassed.passed /*|| body.roles.length === intersect.length*/ ) {
@@ -163,7 +176,6 @@ timeslotRouter.post("/", async (req, res) => {
 
         const startTime = new Date(body.startTime)
         const endTime = new Date(body.endTime)
-
         const timeslot = await Timeslot.build({
             description: body.description,
             startTime: startTime,
@@ -171,20 +183,23 @@ timeslotRouter.post("/", async (req, res) => {
             maxPeople: body.maxPeople,
         })
 
-
+        logger.info("timeslot", body.roles.length)
         if (body.roles.length === 0) {
             res.status(400).json({ errorCode: "NO_ROLES_ERROR" })
         } else if (startTime > endTime) {
             res.status(400).json({ errorCode: "START_GREATER_END_TIME_ERROR" })
         } else {
-            timeslot.save().then(async timesloteResponse => {
+            // try {
+                await timeslot.save()
+                logger.info("in saving")
                 await timeslot.setCreatedByUser(user)
-                await timeslot.setTimeslotCategory(body.timeslotCategoryId)
+                await timeslot.setTimeslotCategory(body.timeslotCategory)
                 await timeslot.setRoles(body.roles);
-                res.json(timesloteResponse)
-            }).catch(error => {
-                res.status(400).json({ errorCode: "SAVE_ERROR", error: error })
-            })
+                await timeslot.reload()
+                res.json(timeslot)
+            // }catch(error) {
+            //     res.status(400).json({ errorCode: "SAVE_ERROR", error: error })
+            // }
         }
     } else {
         res.status(401).json({ errorCode: "NOT_AUTHORIZED" })

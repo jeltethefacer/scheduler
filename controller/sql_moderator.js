@@ -120,7 +120,10 @@ moderatorRouter.post("/toggleRole", async (req, res, next) => {
 
     if (roleAuthorizationReturn.passed) {
         let role = await Role.findByPk(body.roleId)
-        let user = await User.findByPk(body.userId)
+        let user = await User.findByPk(body.userId, {
+            include: ["roles", "chairman"]
+        })
+
 
         if (!role || !user) {
             res.status(400).json({ error: "The role or user does not exists" })
@@ -130,14 +133,13 @@ moderatorRouter.post("/toggleRole", async (req, res, next) => {
         if (await role.hasUser(user)) {
             logger.info("remove")
             await role.removeUser(user);
-            userRoles = await user.getRoles();
-            res.json({user: user, role: userRoles})
         } else {
             logger.info("add")
             await role.addUser(user)
-            userRoles = await user.getRoles();
-            res.json({user: user, role: userRoles})
         }
+        await user.reload();
+        userRoles = await user.getRoles();
+        res.json({user: user, role: userRoles})
 
     } else {
         res.status(401).json({ error: roleAuthorizationReturn.message })

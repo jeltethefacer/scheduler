@@ -30,8 +30,6 @@ const roleAuthorization = async (req, roleId) => {
   if(!role) {
     return { passed: false, message: "Role not ofund", user: authorizedUser }
   }
-  
-  logger.info(role, authorizedUser)
 
   if (!authorizedUser.hasRole(role)) {
     return { passed: false, message: "Not the nesessary authorization", user: authorizedUser }
@@ -43,7 +41,6 @@ const authorization = async (req) => {
   const token = getTokenFrom(req)
   try {
     decodedToken = jwt.verify(token, process.env.SECRET)
-    logger.info(decodedToken)
   } catch {
     return { passed: false, message: "invalid or missing token" }
   }
