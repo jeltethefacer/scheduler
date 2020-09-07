@@ -1,5 +1,4 @@
 const express = require("express")
-const mongoose = require("mongoose")
 const cors = require('cors')
 const path = require('path');
 
@@ -15,14 +14,6 @@ const roleRouter = require("./controller/sql_role")
 const loginRouter = require("./controller/sql_login")
 const moderatorRouter = require("./controller/sql_moderator")
 const timeslotCategorieRouter = require("./controller/sql_timeslotCategory")
-logger.info("connecting to ", config.MONGODB_URI)
-
-mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        logger.info("connected to the db")
-    }).catch(error => {
-        logger.error(`an error has occured when connecting to the db: ${error}`)
-    })
 
 const app = express()
 
