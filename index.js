@@ -8,6 +8,7 @@ const config = require("./utils/config")
 const middleware = require('./utils/middleware')
 
 const timeslotRouter = require("./controller/sql_timeslot")
+const timeslotRouter2 = require("./controller/sql_timeslot_rest")
 const usersRouter = require('./controller/sql_user')
 const roleRouter = require("./controller/sql_role")
 const loginRouter = require("./controller/sql_login")
@@ -33,6 +34,8 @@ app.use(express.static('build'))
 
 
 app.use("/api/timeslot", timeslotRouter)
+app.use("/api/timeslot", timeslotRouter2)
+
 app.use("/api/user", usersRouter)
 app.use("/api/user/login", loginRouter)
 app.use("/api/role", roleRouter)

@@ -3,13 +3,9 @@ const {User, Timeslot, TimeslotCategory, Role} = require("../models/models")
 
 
 const config = require("../utils/config")
-const logger = require("../utils/logger")
-const sequelize = require("../models/dbConnection")
-const timeslot = require("../models/timeslot")
 const { Op } = require("sequelize")
 
 const authorization = require("../helper/sql_authorization").authorization
-const roleAuthorization = require("../helper/sql_authorization").roleAuthorization
 
 timeslotRouter.get("/", async (req, res) => {
     const body = req.body
@@ -169,68 +165,6 @@ timeslotRouter.post("/unsubscribe", async (req, res) => {
 })
 
 
-
-timeslotRouter.post("/", async (req, res) => {
-    const body = req.body
-
-    //checks for createTimeslots
-    const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
-    
-    //checks if the chairman wants to create a timeslot for it's own users
-    const chairmanRoles = await authPassed.user.getChairman();
-    //const intersect = body.roles.filter(role => chairmanRoles.includes(role))
-
-    if (authPassed.passed /*|| body.roles.length === intersect.length*/ ) {
-
-        const user = authPassed.user
-
-        const startTime = new Date(body.startTime)
-        const endTime = new Date(body.endTime)
-        const timeslot = await Timeslot.build({
-            description: body.description,
-            startTime: startTime,
-            endTime: endTime,
-            maxPeople: body.maxPeople,
-        })
-
-        logger.info("timeslot", body.roles.length)
-        if (body.roles.length === 0) {
-            res.status(400).json({ errorCode: "NO_ROLES_ERROR" })
-        } else if (startTime > endTime) {
-            res.status(400).json({ errorCode: "START_GREATER_END_TIME_ERROR" })
-        } else {
-            // try {
-                await timeslot.save()
-                logger.info("in saving")
-                await timeslot.setCreatedByUser(user)
-                await timeslot.setTimeslotCategory(body.timeslotCategory)
-                await timeslot.setRoles(body.roles);
-                await timeslot.reload()
-                res.json(timeslot)
-            // }catch(error) {
-            //     res.status(400).json({ errorCode: "SAVE_ERROR", error: error })
-            // }
-        }
-    } else {
-        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
-    }
-})
-
-timeslotRouter.delete("/:id", async (req, res) => {
-
-    //checks for createTimeslots
-    const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
-    if (authPassed.passed) {
-        
-        Timeslot.destroy({where: {id: req.params.id}}).then(response => {
-            res.status(200).end()
-        }).catch(error => {
-            res.status(400).json({ errorCode: "DELETE_ERROR", error: error })
-        })
-    } else {
-        res.status(401).json({ errorCode: "NOT_AUTHORIZED" })
-    }
-})
 //TODO: edit timeslots  low prior
 /*
 timeslotRouter.put("/:id", (req, res, next) => {
