@@ -61,7 +61,7 @@ function getModels() {
         Role: Role,
         Timeslot: Timeslot,
         TimeslotCategory: TimeslotCategory,
-        createModels: createModels
+        sequelize: sequelize
     }
 }
 

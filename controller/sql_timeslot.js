@@ -87,13 +87,12 @@ timeslotRouter.get("/user", async (req, res) => {
     }
 })
 
-timeslotRouter.post("/subscribe", async (req, res) => {
-    const body = req.body
+timeslotRouter.put("/:timeslotId/user", async (req, res) => {
 
     const authPassed = await authorization(req)
 
     if (authPassed.passed) {
-        const timeslot = await Timeslot.findByPk(body.timeslotId, {include: [{
+        const timeslot = await Timeslot.findByPk(req.params.timeslotId, {include: [{
             model: Role,
         }, {
             model: User,
@@ -129,13 +128,12 @@ timeslotRouter.post("/subscribe", async (req, res) => {
 })
 
 
-timeslotRouter.post("/unsubscribe", async (req, res) => {
-    const body = req.body
+timeslotRouter.delete("/:timeslotId/user", async (req, res) => {
 
     const authPassed = await authorization(req)
 
     if (authPassed.passed) {
-        let timeslot = await Timeslot.findByPk(body.timeslotId, {include: [{
+        let timeslot = await Timeslot.findByPk(req.params.timeslotId, {include: [{
             model: Role,
         }, {
             model: User,

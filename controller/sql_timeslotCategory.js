@@ -52,14 +52,14 @@ timeslotCategoryRouter.get("/:id", async (req, res) => {
     })
 })
 
-timeslotCategoryRouter.post("/change", async (req, res, next) => {
+timeslotCategoryRouter.put("/:timeslotCategoryId", async (req, res, next) => {
     const body = req.body 
 
     const authPassed = await roleAuthorization(req, config.CREATE_TIMESLOT)
     console.log(req.auth)
     if(authPassed.passed){
 
-        let timeslotCategory = await TimeslotCategory.findByPk(body.timeslotCategoryId)
+        let timeslotCategory = await TimeslotCategory.findByPk(req.params.timeslotCategoryId)
         const subscribeLength = body.subscribeLength
         const cancelLength = body.cancelLength
         const title = body.title

@@ -9,7 +9,7 @@ const logger = require("../utils/logger")
 const config = require("../utils/config")
 
 
-
+//TODO: look if this function is necessary
 usersRouter.post("/", async (req, res, next) => {
     const body = req.body
     const saltRounds = 10
@@ -35,7 +35,7 @@ usersRouter.get("/", async (req, res, next) => {
     
     if (user.passed) {
         const returnUser = user.user
-        const userRoles =  await user.user.getRoles()
+        const userRoles =  await returnUser.getRoles()
         res.json({user: returnUser, roles: userRoles})
     }
     else {
@@ -43,36 +43,38 @@ usersRouter.get("/", async (req, res, next) => {
     }
 })
 
-usersRouter.post("/addRole", async (req, res, next) => {
-    const body = req.body
+// this function is probably a duplicate
 
-    //checks if the user has the addRole role 
-    roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
+// usersRouter.post("/addRole", async (req, res, next) => {
+//     const body = req.body
 
-    if (roleAuthorizationReturn.passed) {
-        //uses this to prevent duplucation since there are two responses 
-        const responseValue = (user, role) => {
-            return {
-                user: user,
-                role: role
-            }
-        }
+//     //checks if the user has the addRole role 
+//     roleAuthorizationReturn = await authorizationFunctions.roleAuthorization(req, config.USER_MODERATOR)
 
-        const user = await User.findByPk( body.userId);
-        const role = await Role.findByPk( body.roleId);
+//     if (roleAuthorizationReturn.passed) {
+//         //uses this to prevent duplucation since there are two responses 
+//         const responseValue = (user, role) => {
+//             return {
+//                 user: user,
+//                 role: role
+//             }
+//         }
 
-        if (!user) {
-            res.status(400).json({ error: "user not found" })
-        } else if (!role) {
-            res.status(400).json({ error: "role not found" })
-        }
+//         const user = await User.findByPk( body.userId);
+//         const role = await Role.findByPk( body.roleId);
 
-        await user.addRole(role);
-        res.json(responseValue(user, role))
+//         if (!user) {
+//             res.status(400).json({ error: "user not found" })
+//         } else if (!role) {
+//             res.status(400).json({ error: "role not found" })
+//         }
+
+//         await user.addRole(role);
+//         res.json(responseValue(user, role))
     
-    } else {
-        res.status(401).json({ error: roleAuthorizationReturn.message })
-    }
-})
+//     } else {
+//         res.status(401).json({ error: roleAuthorizationReturn.message })
+//     }
+// })
 
 module.exports = usersRouter

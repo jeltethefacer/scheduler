@@ -4,7 +4,8 @@ const { DB_IP } = require('../utils/config');
 
 const sequelize = new Sequelize(config.DB_NAME, config.DB_USERNAME, config.DB_PASSWORD, {
     host: DB_IP,
-    dialect: 'mysql'
+    dialect: 'mysql',
+    logging: false
 });
 async function authenticate() {
     try {

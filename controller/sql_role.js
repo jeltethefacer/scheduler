@@ -11,15 +11,22 @@ roleRouter.post("/", async (req, res, next) => {
 
     try {
         const savedRole = await role.save()
-        res.json(savedRole)
+        res.json({role: savedRole})
     } catch(error) {
-        next(error)
+        logger.error(error)
+        res.status(500).json({errorCode: "CREATE_ERROR"})
     }
 })
 
 roleRouter.get("/", async (req, res, next) => {
-    const roles = await Role.findAll();
-    res.json(roles)
+    try {
+        const roles = await Role.findAll();
+        res.json({roles: roles})
+    } catch(error) {
+        logger.error(error)
+        res.status(500).json({errorCode: "LOAD_ERROR"})
+    }
+
 })
 
 module.exports = roleRouter
