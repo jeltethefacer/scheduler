@@ -8,16 +8,26 @@ const { Op } = require("sequelize")
 const authorization = require("../helper/sql_authorization").authorization
 
 timeslotRouter.get("/", async (req, res) => {
-    const body = req.body
 
     const authPassed = await authorization(req)
+
+
 
     if (authPassed.passed) {
         //if it's the combar show everything 
         if (await authPassed.user.hasRole(config.COM_BAR)) {
+            
+            //set timesoffset in days before the current date from which onward to load timeslots
+            let timeOffSet = 5;
+            if(Number(req.query.timeOffSet)) {
+                timeOffSet = Number(req.query.timeOffSet)
+            }
+
+            const beginDate = new Date(new Date().getTime() - timeOffSet * 24 * 60 * 60 * 1000) 
+
             const timeslots = await Timeslot.findAll({where: {
                 startTime: {
-                    [Op.gt]: new Date()
+                    [Op.gt]: beginDate
                 }},
                 include: [{
                     model: Role,
